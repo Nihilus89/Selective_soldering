@@ -43,8 +43,6 @@ int inspectionCamera::locateFiducial(Mat src, float target_x, float target_y, in
     // The x,y coordinates of the ROI's starting point
     float x_roi = target_x - X_ROI, y_roi = target_y - Y_ROI;
 
-    circle(src, Point(202, 392), 8, Scalar(0, 0, 255), 1, LINE_AA); // Scalar(B, G, R)
-    circle(src, Point(196, 393), 8, Scalar(255, 0, 0), 1, LINE_AA); // Scalar(B, G, R)
     // Uncomment for saving the frame to disk
     //imwrite( "/home/vassilis/Dropbox/Uppsala Universitet/Thesis/Selective-soldering-PC/opencv_board_tilted.jpg", src );
 
@@ -78,17 +76,47 @@ int inspectionCamera::locateFiducial(Mat src, float target_x, float target_y, in
     double alpha = 0.5; // transparency
     addWeighted(color, alpha, roi, 1.0 - alpha, 0.0, roi);
 
-}
-
-
-void inspectionCamera::coordinatesTranslation(float correctFiducial[][2], float currentFiducial[][2], int numFiducials) {
-
-    cout << currentFiducial[0][0] << " " << currentFiducial[0][1] << endl;
+    if(numCircles == 1)
+        return 0;
+    else
+        return 1;
 
 }
 
 
-void inspectionCamera::rigidTransform(Mat A, Mat B) {
+void inspectionCamera::coordinatesTranslation(float correctFiducial[][2], float currentFiducial[][2], float coordinates[][2], int numFiducial, int numComp) {
+
+    Mat correctMatrix, currentMatrix, R, t;
+    correctMatrix = Mat(numFiducial, 2, CV_32F, correctFiducial);
+    currentMatrix = Mat(numFiducial, 2, CV_32F, currentFiducial);
+
+    rigidTransform(correctMatrix,currentMatrix,R,t); // Get the R and t matrices from the rigid transform
+
+    cout << "R = "<< endl << " "  << R << endl << endl;
+    cout << "t = "<< endl << " "  << t << endl << endl;
+
+    Mat coordinates_or, coordinates_tr, trans;
+    coordinates_or = Mat(numComp, 2, CV_32F, coordinates);
+
+    transpose(coordinates_or, trans);
+    coordinates_tr = (R*trans) + repeat(t, 1, numComp);
+    transpose(coordinates_tr, trans);
+
+    cout << "coordinates_or = "<< endl << " "  << coordinates_or << endl << endl;
+    cout << "coordinates_tr = "<< endl << " "  << trans << endl << endl;
+    cout << "coordinates_tr[0][0] = "<< endl << " "  << trans.at<float>(0,0) << endl << endl;
+
+    for(int i=0; i<numComp; i++)
+    {
+        coordinates[i][0] = trans.at<float>(i,0);
+        coordinates[i][1] = trans.at<float>(i,1);
+    }
+
+
+}
+
+
+void inspectionCamera::rigidTransform(Mat A, Mat B, Mat& R, Mat& t) {
 
     int N; // Number of points
     Mat S,U,V; // SVD matrices
@@ -138,22 +166,4 @@ void inspectionCamera::rigidTransform(Mat A, Mat B) {
     transpose(centroid_B, centroid_BPrime); // centroid_B'
     t = -R * centroid_APrime + centroid_BPrime; // t = -R*centroid_A' + centroid_B'
     //cout << "t = "<< endl << " "  << t << endl << endl;
-
-    float data3[1][2] = {202, 392};
-    Mat test, test_tr, A2;
-    test = Mat(1, 2, CV_32F, data3);
-
-    //A2 = (ret_R*A') + repmat(ret_t, 1, n);
-    transpose(A, trans);
-    A2 = (R*trans) + repeat(t, 1, N);
-    //test_tr = (ret_R*test') + repmat(ret_t, 1, 1);
-    transpose(test,trans);
-    test_tr = (R * trans) + repeat(t, 1, 1);
-    transpose(test_tr,trans);
-    cout << "test_tr = "<< endl << " "  << trans << endl << endl;
-
-    transpose(A2, trans);
-    cout << "A2 = "<< endl << " "  << trans << endl << endl;
-
-
 }

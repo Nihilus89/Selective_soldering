@@ -26,13 +26,13 @@ public:
     inspectionCamera(int); // constructor
     Mat captureImage(int focus);
     int locateFiducial(Mat, float, float, int, int);
-    void coordinatesTranslation(float correctFiducial[][2], float currentFiducial[][2], int numFiducials);
+    void coordinatesTranslation(float correctFiducial[][2], float currentFiducial[][2], float coordinates[][2], int numFiducial, int numComp);
 
 private:
     int devNum;
     Mat R, t;
 
-    void rigidTransform(Mat, Mat);
+    void rigidTransform(Mat, Mat, Mat& R, Mat& t);
 };
 
 
