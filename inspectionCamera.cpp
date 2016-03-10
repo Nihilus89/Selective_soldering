@@ -104,7 +104,6 @@ void inspectionCamera::coordinatesTranslation(float correctFiducial[][2], float 
 
     cout << "coordinates_or = "<< endl << " "  << coordinates_or << endl << endl;
     cout << "coordinates_tr = "<< endl << " "  << trans << endl << endl;
-    cout << "coordinates_tr[0][0] = "<< endl << " "  << trans.at<float>(0,0) << endl << endl;
 
     for(int i=0; i<numComp; i++)
     {
